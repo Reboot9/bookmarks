@@ -11,6 +11,15 @@
 <p>Please, use the following form to log-in:</p>
 <p>If you don't have an account <a href="{% url 'register' %}">Sign up</a></p>
 {% endif %}
+<div class="social">
+    <ul>
+        <li class="twitter">
+            <a href="{% url 'social:begin' 'twitter' %}?next=">
+                Sign in with twitter
+            </a>
+        </li>
+    </ul>
+    </div>
 <div class="login-form">
     <form action="{% url 'login' %}" method="post">
         {% csrf_token %}

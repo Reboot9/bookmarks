@@ -9,32 +9,35 @@ from django.contrib import messages
 from django.views import View
 from django.views.generic.edit import CreateView, UpdateView
 
+from django.contrib.auth.views import LoginView
+
+
 from .forms import LoginForm, UserRegistrationForm, UserEditForm
 from .models import Profile
 
 
-class LoginView(View):
-    template_name = 'account/login.html'
-    form_class = LoginForm
-
-    def get(self, request):
-        form = self.form_class()
-
-        return render(request, self.template_name, context={
-            'form': form,
-        })
-
-    def post(self, request):
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            user = authenticate(
-                username=form.cleaned_data['username'],
-                password=form.cleaned_data['password'],
-            )
-            if user is not None:
-                login(request, user)
-                return HttpResponse('Authenticated successfully')
-        return render(request, self.template_name, context={'form': form})
+# class LoginView(View):
+#     template_name = 'account/login.html'
+#     form_class = LoginForm
+#
+#     def get(self, request):
+#         form = self.form_class()
+#
+#         return render(request, self.template_name, context={
+#             'form': form,
+#         })
+#
+#     def post(self, request):
+#         form = self.form_class(request.POST)
+#         if form.is_valid():
+#             user = authenticate(
+#                 username=form.cleaned_data['username'],
+#                 password=form.cleaned_data['password'],
+#             )
+#             if user is not None:
+#                 login(request, user)
+#                 return HttpResponse('Authenticated successfully')
+#         return render(request, self.template_name, context={'form': form})
 
 
 @login_required
@@ -85,3 +88,19 @@ class UserEditView(LoginRequiredMixin, UpdateView):
         messages.error(self.request, 'Error updating your profile')
 
         return response
+
+
+class UserLoginView(LoginView):
+    template_name = 'registration/login.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+    # def test_func(self):
+    #     return not self.request.user.is_authenticated
+    #
+    # def handle_no_permission(self):
+    #     return redirect(reverse_lazy('dashboard'))
+

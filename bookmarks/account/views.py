@@ -11,7 +11,6 @@ from django.views.generic.edit import CreateView, UpdateView
 
 from django.contrib.auth.views import LoginView
 
-
 from .forms import LoginForm, UserRegistrationForm, UserEditForm
 from .models import Profile
 
@@ -103,4 +102,3 @@ class UserLoginView(LoginView):
     #
     # def handle_no_permission(self):
     #     return redirect(reverse_lazy('dashboard'))
-

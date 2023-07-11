@@ -16,7 +16,7 @@
                     <a href="{% url 'dashboard' %}">My dashboard</a>
                 </li>
                 <li {% if section == "images"%} class="selected" {% endif %}>
-                    <a href="#">Images</a>
+                    <a href="{% url 'images:create' %}">Images</a>
                 </li>
                 <li {% if section == "people" %}class="selected"{% endif %}>
                     <a href="#">People</a>
@@ -35,9 +35,9 @@
     {% if messages %}
         <ul class="messages">
             {% for message in messages %}
-                <li class="{{ message.tags }}">
+                <li class="alert {{ message.tags }}">
                     {{ message|safe }}
-                    <a href="#" class="close">X</a>
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                 </li>
             {% endfor %}
         </ul>

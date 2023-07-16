@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
+
+    <script src="//cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
 </head>
 <body>
     <div id="header">
@@ -16,7 +18,7 @@
                     <a href="{% url 'dashboard' %}">My dashboard</a>
                 </li>
                 <li {% if section == "images"%} class="selected" {% endif %}>
-                    <a href="{% url 'images:create' %}">Images</a>
+                    <a href="{% url 'images:list' %}">Images</a>
                 </li>
                 <li {% if section == "people" %}class="selected"{% endif %}>
                     <a href="#">People</a>
@@ -46,5 +48,13 @@
         {% block content %}
         {% endblock %}
     </div>
+
+<script>
+        const csrftoken = Cookies.get('csrftoken');
+        document.addEventListener('DOMContentLoaded', (event) => {
+            {% block domready %}
+            {% endblock %}
+        })
+    </script>
 </body>
 </html>

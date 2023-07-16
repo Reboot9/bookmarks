@@ -237,8 +237,8 @@ a.like, a.follow { float:right; margin-top:-8px; }
     text-align:center;
 }
 .image-likes img {
-    width:120px;
-    height:120px;
+    width:30px;
+    height:30px;
     border-radius:50%;
 }
 

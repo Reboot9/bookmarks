@@ -51,8 +51,8 @@ class ImageLikeView(LoginRequiredMixin, View):
     def dispatch(self, request, *args, **kwargs):
         if request.method == 'POST':
             return self.post(request, *args, **kwargs)
-        else:
-            return HttpResponseNotAllowed(['POST'])
+
+        return HttpResponseNotAllowed(['POST'])
 
     def post(self, request, *args, **kwargs):
         image_id = request.POST.get('id')
@@ -60,7 +60,6 @@ class ImageLikeView(LoginRequiredMixin, View):
         action = request.POST.get('action')
         if image_id and action:
             image = get_object_or_404(Image, id=image_id)
-            print(image.user)
 
             if action == 'like':
                 image.like.add(request.user)
@@ -105,7 +104,6 @@ class ImageListView(LoginRequiredMixin, ListView):
             paginator.page(paginator.num_pages)
 
         return super().get(request, *args, **kwargs)
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

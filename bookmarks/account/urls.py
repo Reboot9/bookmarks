@@ -27,6 +27,11 @@ urlpatterns = [
 
     path('register/', views.UserRegistrationView.as_view(), name='register'),
     path('edit/', views.UserEditView.as_view(), name='edit'),
+
+    path('users/', views.UserListView.as_view(), name='user_list'),
+    path('users/<str:username>/', views.UserDetailView.as_view(), name='user_detail'),
+    path('users/follow', views.UserFollowView.as_view(), name='follow'),
+
 ]
 
 if settings.DEBUG:

@@ -223,7 +223,7 @@ a.like, a.follow { float:right; margin-top:-8px; }
     float:left;
     width:220px;
     height:300px;
-    margin:0 10px 10px 10px;
+    margin:30px 10px 10px 10px;
     border-top:8px solid #12c064;
     background:#eee;
 }

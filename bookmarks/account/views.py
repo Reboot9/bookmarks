@@ -2,17 +2,18 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 # from django.contrib.auth.models import User
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.views import View
+from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView
 
 from django.contrib.auth.views import LoginView
 
 from .forms import LoginForm, UserRegistrationForm, UserEditForm
-from .models import Profile
+from .models import Profile, Contact
 
 
 # class LoginView(View):
@@ -97,8 +98,60 @@ class UserLoginView(LoginView):
             return redirect('dashboard')
         return super().dispatch(request, *args, **kwargs)
 
-    # def test_func(self):
-    #     return not self.request.user.is_authenticated
-    #
-    # def handle_no_permission(self):
-    #     return redirect(reverse_lazy('dashboard'))
+
+class UserListView(LoginRequiredMixin, ListView):
+    model = Profile
+    template_name = 'account/list.html'
+    context_object_name = 'users'
+    section = 'people'
+
+    def get_queryset(self):
+        # excluding sender from the profiles list
+        return Profile.objects.filter(is_active=True).exclude(id=self.request.user.id)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['section'] = self.section
+
+        return context
+
+
+class UserDetailView(LoginRequiredMixin, DetailView):
+    model = Profile
+    template_name = 'account/detail.html'
+    section = 'people'
+    context_object_name = 'user'
+
+    def get_object(self, queryset=None):
+        username = self.kwargs.get('username')
+        return get_object_or_404(Profile, username=username, is_active=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['section'] = self.section
+
+        return context
+
+
+class UserFollowView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            return self.post(request, *args, **kwargs)
+
+        return HttpResponseNotAllowed(['POST'])
+
+    def post(self, request):
+        user_id = request.POST.get('id')
+        action = request.POST.get('action')
+        if user_id and action:
+            user = get_object_or_404(Profile, id=user_id)
+
+            if action == 'follow':
+                Contact.objects.get_or_create(
+                    user_from=request.user,
+                    user_to=user
+                )
+            else:
+                Contact.objects.filter(user_from=request.user, user_to=user).delete()
+            return JsonResponse({'status': 'ok'})
+        return JsonResponse({'status': 'error'})

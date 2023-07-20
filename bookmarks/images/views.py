@@ -9,6 +9,7 @@ from django.views.generic.edit import CreateView, View
 
 from .forms import ImageCreateForm
 from .models import Image
+from actions.utils import create_action
 
 
 class ImageCreateView(LoginRequiredMixin, CreateView):
@@ -21,6 +22,7 @@ class ImageCreateView(LoginRequiredMixin, CreateView):
         new_image = form.save(commit=False)
         new_image.user = self.request.user
         new_image.save()
+        create_action(self.request.user, 'bookmarked image', new_image)
         messages.success(self.request, 'Image added successfully')
         return redirect(new_image.get_absolute_url())
 
@@ -63,6 +65,7 @@ class ImageLikeView(LoginRequiredMixin, View):
 
             if action == 'like':
                 image.like.add(request.user)
+                create_action(self.request.user, 'likes', image)
             else:
                 image.like.remove(request.user)
 

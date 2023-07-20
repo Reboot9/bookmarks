@@ -14,6 +14,8 @@ from django.contrib.auth.views import LoginView
 
 from .forms import LoginForm, UserRegistrationForm, UserEditForm
 from .models import Profile, Contact
+from actions.utils import create_action
+from actions.models import Action
 
 
 # class LoginView(View):
@@ -42,8 +44,18 @@ from .models import Profile, Contact
 
 @login_required
 def dashboard(request):
+    # by default, show all actions
+    actions = Action.objects.exclude(user=request.user)
+    following_ids = request.user.following.values_list('id', flat=True)
+    print(actions)
+    if following_ids:
+        # if user is following other users, show only their actions
+        actions = actions.filter(user_id__in=following_ids)
+    actions = actions.select_related('user')[:10].prefetch_related('target')[:10]
+    print(actions)
     return render(request, 'account/dashboard.html', {
         'section': 'dashboard',
+        'actions': actions
     })
 
 
@@ -63,7 +75,7 @@ class UserRegistrationView(UserPassesTestMixin, CreateView):
         user = form.save(commit=False)
         user.set_password(form.cleaned_data['password'])
         user.save()
-
+        create_action(user, 'has created an account')
         return render(self.request, self.success_url, {'new_user': user})
 
 
@@ -151,6 +163,7 @@ class UserFollowView(LoginRequiredMixin, View):
                     user_from=request.user,
                     user_to=user
                 )
+                create_action(request.user, 'is following', user)
             else:
                 Contact.objects.filter(user_from=request.user, user_to=user).delete()
             return JsonResponse({'status': 'ok'})

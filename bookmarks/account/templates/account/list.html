@@ -9,7 +9,7 @@
         {% for user in users %}
             <div class="user">
                 <a href="{{ user.get_absolute_url }}">
-                    <img src="/images{% thumbnail user.photo 180x180 crop='smart' %}">
+                    <img src="/images{% thumbnail user.image 180x180 crop='smart' %}">
 
                 </a>
                 <div class="info">

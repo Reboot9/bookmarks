@@ -15,7 +15,7 @@ class UserRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['username', 'first_name', 'email', 'password', 'password2', 'date_of_birth', 'photo']
+        fields = ['username', 'first_name', 'email', 'password', 'password2', 'date_of_birth', 'image']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date', 'placeholder': 'yyyy-mm-dd (DOB)'})
         }
@@ -42,10 +42,10 @@ class UserRegistrationForm(forms.ModelForm):
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['first_name', 'last_name', 'email', 'date_of_birth', 'photo']
+        fields = ['first_name', 'last_name', 'email', 'date_of_birth', 'image']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date', 'placeholder': 'yyyy-mm-dd (DOB)'}),
-            'photo': forms.ClearableFileInput()
+            'image': forms.ClearableFileInput()
         }
 
     def clean_email(self):

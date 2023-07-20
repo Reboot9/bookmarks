@@ -22,7 +22,7 @@ class Contact(models.Model):
 
 class Profile(AbstractUser):
     date_of_birth = models.DateField(blank=True, null=True)
-    photo = models.ImageField(upload_to='users/%Y/%m/%d/', blank=True)
+    image = models.ImageField(upload_to='users/%Y/%m/%d/', blank=True)
 
     following = models.ManyToManyField('self', through=Contact,
                                        related_name='followers', symmetrical=False

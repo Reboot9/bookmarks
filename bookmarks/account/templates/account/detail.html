@@ -6,7 +6,7 @@
 {% block content %}
     <h1>{{ user.get_username }}</h1>
     <div class="profile-info">
-        <img src="/images{% thumbnail user.photo 180x180 crop='smart' %}" class="user-detail">
+        <img src="/images{% thumbnail user.image 180x180 crop='smart' %}" class="user-detail">
     </div>
     {% with total_followers=user.followers.count %}
             <span class="count">

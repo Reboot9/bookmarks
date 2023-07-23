@@ -54,15 +54,14 @@ class ImageDetailView(DetailView):
 
         # increment number of views using redis
         image_id = self.object.id
-        # r.set(f'image:{image_id}:views', 0)
-        # total_views = r.incr(f'image:{image_id}:views')
-        # r.delete(f'image:{image_id}:views')
-        # # print(r.type(f'image:{image_id}:views'))
         r.sadd(f'image:{image_id}:views', self.request.user.id)
+
         # returns cardinality(length) of a set that contains unique user views
         total_views = r.scard(f'image:{image_id}:views')
         context['total_views'] = total_views
 
+        # increase image ranking by 1
+        r.zincrby('image_ranking', 1, image_id)
         return context
 
 
@@ -133,3 +132,25 @@ class ImageListView(LoginRequiredMixin, ListView):
         if images_only:
             self.template_name = 'images/image/image_list.html'
         return super().render_to_response(context, **response_kwargs)
+
+
+class ImageRankView(LoginRequiredMixin, ListView):
+    model = Image
+    template_name = 'images/image/ranking.html'
+    context_object_name = 'most_viewed'
+    section = 'images'
+    def get_queryset(self):
+        image_ranking = r.zrange('image_ranking', 0, -1, desc=True)[:10]
+        image_ranking_ids = [int(id_) for id_ in image_ranking]
+
+        # get most viewed images
+        most_viewed = list(Image.objects.filter(id__in=image_ranking_ids))
+        most_viewed.sort(key=lambda x: image_ranking_ids.index(x.id))
+
+        return most_viewed
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['section'] = self.section
+
+        return context

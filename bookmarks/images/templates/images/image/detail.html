@@ -10,6 +10,7 @@
         <img src="/images{% thumbnail image.image 300x0 %}" alt="{{ image.title }} by {{ image.user.username }}" class="image-detail">
     </a>
 
+
     {% with total_likes=image.like.count users_like=image.like.all %}
         <div class="image-info">
             <div>
@@ -20,8 +21,10 @@
                 <span class="count">
                     {{ total_views }} view{{ total_views|pluralize }}
                 </span>
+                <a href="{% url 'images:ranking' %}" class="rank button" >View on ranking</a>
                 <a href="#" data-id="{{ image.id }}" data-action="{% if request.user in users_like %}un{% endif %}like"
                 class="like button">
+
                 {% if request.user not in users_like %}
                     Like
                 {% else %}
@@ -32,6 +35,7 @@
             </div>
             {{ image.description|linebreaks }}
         </div>
+
         <div class="image-likes">
             {% for user in users_like %}
                 <div>
@@ -44,7 +48,9 @@
                 Nobody likes this image yet.
             {% endfor %}
         </div>
+
     {% endwith %}
+
 
 {% endblock %}
 

@@ -47,12 +47,10 @@ def dashboard(request):
     # by default, show all actions
     actions = Action.objects.exclude(user=request.user)
     following_ids = request.user.following.values_list('id', flat=True)
-    print(actions)
     if following_ids:
         # if user is following other users, show only their actions
         actions = actions.filter(user_id__in=following_ids)
     actions = actions.select_related('user')[:10].prefetch_related('target')[:10]
-    print(actions)
     return render(request, 'account/dashboard.html', {
         'section': 'dashboard',
         'actions': actions

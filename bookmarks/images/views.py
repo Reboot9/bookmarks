@@ -1,15 +1,21 @@
+import redis
+from actions.utils import create_action
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.core.paginator import PageNotAnInteger, EmptyPage
 from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
-from django.shortcuts import redirect, get_object_or_404, render
-from django.views.generic import DetailView, ListView, TemplateView
+from django.shortcuts import redirect, get_object_or_404
+from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, View
 
 from .forms import ImageCreateForm
 from .models import Image
-from actions.utils import create_action
+
+# connect to Redis
+r = redis.Redis(host=settings.REDIS_HOST,
+                port=settings.REDIS_PORT,
+                db=settings.REDIS_DB)
 
 
 class ImageCreateView(LoginRequiredMixin, CreateView):
@@ -45,6 +51,17 @@ class ImageDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['section'] = 'images'
+
+        # increment number of views using redis
+        image_id = self.object.id
+        # r.set(f'image:{image_id}:views', 0)
+        # total_views = r.incr(f'image:{image_id}:views')
+        # r.delete(f'image:{image_id}:views')
+        # # print(r.type(f'image:{image_id}:views'))
+        r.sadd(f'image:{image_id}:views', self.request.user.id)
+        # returns cardinality(length) of a set that contains unique user views
+        total_views = r.scard(f'image:{image_id}:views')
+        context['total_views'] = total_views
 
         return context
 
@@ -94,19 +111,16 @@ class ImageListView(LoginRequiredMixin, ListView):
         images_only = self.request.GET.get('images_only')
 
         try:
-            paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver the first page
-            paginator.page(1)
-        except EmptyPage:
+            page_obj = paginator.page(page)
+        except (PageNotAnInteger, EmptyPage):
             if images_only:
                 # If it's an AJAX request and page is out of range, return an empty page
                 return HttpResponse('')
 
-            # If page is out of range, deliver the last page of results
-            paginator.page(paginator.num_pages)
+            # If page is not an integer or out of range, deliver the first page
+            page_obj = paginator.page(1)
 
-        return super().get(request, *args, **kwargs)
+        return super().get(request, *args, page_obj=page_obj, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -119,4 +133,3 @@ class ImageListView(LoginRequiredMixin, ListView):
         if images_only:
             self.template_name = 'images/image/image_list.html'
         return super().render_to_response(context, **response_kwargs)
-
